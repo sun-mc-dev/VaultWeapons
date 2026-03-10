@@ -1,0 +1,32 @@
+name: VaultWeapons
+version: ${project.version}
+main: me.sunmc.vw.VaultWeaponsPlugin
+api-version: '1.21'
+author: SunMC
+description: A powerful, async, fully configurable weapons plugin for Paper 1.21+
+
+commands:
+  vaultweapons:
+    description: Main command for VaultWeapons plugin
+    usage: /<command> [reload|recipes|give]
+    aliases: [ vw, vaultweapon ]
+    permission: vaultweapons.admin
+  recipe:
+    description: View weapon recipes
+    usage: /<command> [weapon]
+    aliases: [ recipes, vwrecipe ]
+    permission: vaultweapons.recipe
+
+permissions:
+  vaultweapons.admin:
+    description: Admin permission for VaultWeapons
+    default: op
+  vaultweapons.recipe:
+    description: Permission to view recipes
+    default: true
+  vaultweapons.craft:
+    description: Permission to craft weapons
+    default: true
+  vaultweapons.use:
+    description: Permission to use weapons
+    default: true

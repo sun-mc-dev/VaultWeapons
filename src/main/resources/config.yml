@@ -1,0 +1,113 @@
+# ====================================
+# VaultWeapons Configuration
+# Author: SunMC
+# Version: 0.1-alpha
+# ====================================
+
+# General Settings
+settings:
+  # Enable debug logging
+  debug: false
+
+  # Enable metrics (anonymous usage statistics)
+  metrics: true
+
+  # Auto-save interval in minutes (0 to disable)
+  auto-save: 5
+
+  # Language (currently only en is supported)
+  language: en
+
+# Visual Effects Settings
+effects:
+  # Enable visual effects when crafting weapons
+  enabled: true
+
+  # Firework settings
+  firework:
+    enabled: true
+    # Power of the firework (0-3)
+    power: 1
+    # Firework types: BALL, BALL_LARGE, STAR, BURST, CREEPER
+    type: BALL_LARGE
+    # Colors (hex format or name)
+    colors:
+      - "#FFD700"
+      - "#FF4500"
+      - "#00FF00"
+    # Fade colors
+    fade-colors:
+      - "#FFFFFF"
+    # Trail effect
+    trail: true
+    # Flicker effect
+    flicker: true
+
+  # Title settings
+  title:
+    enabled: true
+    # Title fade in time (ticks)
+    fade-in: 10
+    # Title stay time (ticks)
+    stay: 40
+    # Title fade out time (ticks)
+    fade-out: 10
+
+  # Sound settings
+  sound:
+    enabled: true
+    # Sound type (1.21+ sound names)
+    craft-success: "entity.player.levelup"
+    craft-fail: "entity.villager.no"
+    ability-activate: "entity.experience_orb.pickup"
+
+# Performance Settings
+performance:
+  # Use async operations where possible
+  async: true
+
+  # Thread pool size for async operations (0 = auto)
+  thread-pool-size: 0
+
+  # Cache weapon data
+  cache-data: true
+
+  # Cache expiry in minutes
+  cache-expiry: 30
+
+# Recipe GUI Settings
+recipe-gui:
+  # GUI title
+  title: "&8&lWeapon Recipes"
+
+  # GUI size (must be multiple of 9, max 54)
+  size: 27
+
+  # Background item
+  background:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+
+  # Navigation items
+  navigation:
+    previous:
+      material: ARROW
+      name: "&aPrevious Page"
+      slot: 18
+    next:
+      material: ARROW
+      name: "&cNext Page"
+      slot: 26
+    close:
+      material: BARRIER
+      name: "&cClose"
+      slot: 22
+
+# Permission Settings
+permissions:
+  # Check permissions for crafting
+  check-craft: true
+  # Check permissions for using weapons
+  check-use: true
+  # Check permissions for abilities
+  check-ability: true

@@ -6,10 +6,10 @@
 
 ## Overview
 
-VaultWeapons introduces custom craftable weapons that **grow stronger as you kill enemies**. Each weapon has a unique
-passive ability that evolves with every kill, tracked invisibly inside the item itself using Persistent Data
-Containers (PDC). Everything — weapons, recipes, enchantments, abilities — is fully configurable from a
-single `config.yml` file with no coding required.
+VaultWeapons introduces custom craftable weapons that **grow stronger as you fight**. Each weapon carries a unique
+passive ability that activates on kills or hits, tracked invisibly inside the item itself using Persistent Data
+Containers (PDC). Everything — weapons, recipes, enchantments, abilities — is fully configurable from a single
+`config.yml` file with no coding required.
 
 ---
 
@@ -19,23 +19,61 @@ single `config.yml` file with no coding required.
 
 A diamond sword that starts at **Sharpness I** and becomes deadlier with every kill.
 
-- **Passive Ability:** Every kill permanently increases the sword's Sharpness level by 1.
-- **Cap:** Configurable max Sharpness (default: 10).
-- **Feedback:** An action bar message shows the new Sharpness level and total kill count after every kill.
-- **Crafting:** Shaped recipe using Diamonds and a Blaze Rod.
-
----
+- **Ability:** `SWORD_SHARPNESS` — each kill increases Sharpness by 1 (cap configurable, default 10).
+- **Crafting:** Diamonds + Blaze Rod.
 
 ### 🏹 Vault Crossbow
 
-A crossbow enchanted with **Unbreaking III, Multishot, and Infinity** that auto-reloads faster the more you kill.
+A crossbow loaded with **Unbreaking III, Multishot, and Infinity** that auto-reloads faster the more you kill.
 
-- **Passive Ability:** Every kill reduces the auto-reload delay by a configurable amount of ticks.
-- **Auto-Reload:** After each kill, the crossbow automatically reloads itself after the (reduced) delay — no manual
-  reloading needed.
-- **Cap:** Configurable minimum reload time so it never becomes instant (unless you want it to).
-- **Feedback:** An action bar message shows the current reload delay and total kill count after every kill.
-- **Crafting:** Shaped recipe using Gold Ingots, String, and a vanilla Crossbow.
+- **Ability:** `CROSSBOW_RELOAD` — each kill reduces the auto-reload delay. After the delay, the crossbow reloads itself
+  automatically.
+- **Crafting:** Gold Ingots + String + vanilla Crossbow.
+
+### 🗡 Soul Blade
+
+A golden sword that feeds on fallen enemies.
+
+- **Ability:** `LIFESTEAL` — each kill heals the wielder by a configurable amount of hearts.
+- **Crafting:** Gold Ingots + Nether Star.
+
+### 👻 Phantom Blade
+
+A netherite sword that turns its wielder into a blur.
+
+- **Ability:** `SPEED_BOOST` — each kill grants a configurable Speed effect for a configurable duration.
+- **Crafting:** Feathers + Netherite Ingot + Stick.
+
+### ⚡ Storm Sword
+
+An iron sword that calls the sky to bear witness.
+
+- **Ability:** `LIGHTNING_STRIKE` — each kill summons a visual lightning bolt at the victim's location. Purely
+  cosmetic — no fire, no extra damage.
+- **Crafting:** Lightning Rod + Iron Sword + Stick.
+
+### ☠ Venom Dagger
+
+A stone blade coated in slow-acting venom.
+
+- **Ability:** `POISON_BLADE` — every hit applies a configurable Poison effect to the target.
+- **Crafting:** Spider Eye + Poisonous Potato + Stick.
+
+---
+
+## Abilities Reference
+
+| Ability            | Trigger    | Config Keys                                                   |
+|--------------------|------------|---------------------------------------------------------------|
+| `CROSSBOW_RELOAD`  | Kill (PvP) | `base_reload_ticks`, `reduction_per_kill`, `min_reload_ticks` |
+| `SWORD_SHARPNESS`  | Kill (PvP) | `max_sharpness`                                               |
+| `LIFESTEAL`        | Kill (PvP) | `heal_amount` (half-hearts, e.g. `4.0` = 2 hearts)            |
+| `SPEED_BOOST`      | Kill (PvP) | `duration_ticks`, `amplifier` (1 = Speed I, 2 = Speed II)     |
+| `LIGHTNING_STRIKE` | Kill (PvP) | *(no extra config needed)*                                    |
+| `POISON_BLADE`     | Hit (PvP)  | `duration_ticks`, `amplifier` (0 = Poison I, 1 = Poison II)   |
+| `NONE`             | —          | *(no ability)*                                                |
+
+> All abilities are **PvP-only** — they only trigger when the victim is a player.
 
 ---
 
@@ -43,41 +81,45 @@ A crossbow enchanted with **Unbreaking III, Multishot, and Infinity** that auto-
 
 ### 🎨 Custom Texture Support
 
-Every weapon supports a `custom_model_data` value in config, which maps directly to a resource pack model predicate.
-This lets you give each weapon a completely unique 3D model and texture.
+Every weapon supports a `custom_model_data` value in config, which maps directly to a resource pack model predicate,
+giving each weapon a completely unique 3D model and texture.
 
 ### 🔧 Fully Config-Driven
 
 Weapons are defined entirely in `config.yml`. You can:
 
 - Add unlimited new weapons without touching any code.
-- Change weapon names, lore, materials, enchantments, and ability values freely.
+- Change names, lore, materials, enchantments, and ability values freely.
 - Modify crafting recipes per weapon.
+- Hot-reload everything with `/vw reload`.
 
 ### 📖 Recipe Viewer GUI
 
-Players can run `/vw recipe <weapon_id>` to open a **9×3 inventory GUI** that visually displays the crafting grid,
-ingredients, and the resulting weapon — exactly like a recipe book. All interactions with the GUI are locked (no item
-stealing).
+Players run `/vw recipe <weapon_id>` to open a **9×3 inventory GUI** showing the crafting grid, ingredients,
+and the resulting weapon. All interactions are locked — no item stealing.
 
 ### 🎆 Craft Celebration
 
-When a player successfully crafts a Vault Weapon they are greeted with:
+On crafting any Vault Weapon the player receives:
 
-- A **full-screen title** displaying "✦ VAULT WEAPON CRAFTED ✦" and the weapon name.
+- A **full-screen title** — "✦ VAULT WEAPON CRAFTED ✦" + weapon name.
 - A **challenge-complete sound** effect.
-- **Two fireworks** that explode instantly at the player's location with no entity damage.
-- A **chat message** confirming the forge.
+- **Two instant fireworks** at the player's feet — zero entity damage.
+- A **chat confirmation** message.
+
+### 🚫 Ingredient Protection
+
+Vault Weapons cannot be placed into any crafting grid as an ingredient. The result slot is wiped
+immediately via `PrepareItemCraftEvent` and the player sees an action bar warning.
 
 ### ⚡ Async & Multi-Threaded
 
-Config loading and hot-reloads are performed asynchronously on worker threads. All Bukkit API calls are safely synced
-back to the main thread, keeping the server performant even on large configs.
+Config loading and hot-reloads run on worker threads. All Bukkit API calls are synced back to the
+main thread, keeping the server tick unaffected even with large weapon configs.
 
 ### 🔄 Hot Reload
 
-Admins can run `/vw reload` to reload `config.yml` and re-register all weapon recipes at runtime — no server restart
-needed.
+`/vw reload` reloads `config.yml` and re-registers all recipes at runtime — no restart needed.
 
 ---
 
@@ -86,7 +128,7 @@ needed.
 | Command                  | Permission           | Description                                |
 |--------------------------|----------------------|--------------------------------------------|
 | `/vw list`               | `vaultweapons.use`   | Lists all loaded weapons and their IDs     |
-| `/vw recipe <id>`        | `vaultweapons.use`   | Opens the recipe viewer GUI for a weapon   |
+| `/vw recipe <id>`        | `vaultweapons.use`   | Opens the 9×3 recipe viewer GUI            |
 | `/vw give <player> <id>` | `vaultweapons.admin` | Gives a weapon directly to a player        |
 | `/vw reload`             | `vaultweapons.admin` | Reloads config and recipes without restart |
 
@@ -94,30 +136,34 @@ needed.
 
 ## Adding a New Weapon
 
-Simply add a new block under `weapons:` in `config.yml` and run `/vw reload`:
+Add a block under `weapons:` in `config.yml` and run `/vw reload`:
 
 ```yaml
 weapons:
-  my_axe:
+  my_weapon:
     type: NETHERITE_AXE
     name: "&4Void Axe"
     lore:
       - "&7Cleaves through reality."
-    custom_model_data: 1003
+      - " "
+      - "&ePassive: &fKills restore health."
+    custom_model_data: 2001
     enchantments:
       sharpness: 3
       unbreaking: 2
     ability:
-      type: NONE
+      type: LIFESTEAL
+      heal_amount: 6.0      # 3 hearts per kill
     recipe:
       type: SHAPED
       shape:
-        - "DD "
-        - "DS "
+        - "NN "
+        - "NB "
         - " S "
       ingredients:
-        D: NETHERITE_INGOT
-        S: BLAZE_ROD
+        N: NETHERITE_INGOT
+        B: BLAZE_ROD
+        S: STICK
 ```
 
 No code changes. No restarts. Just config.
@@ -126,9 +172,12 @@ No code changes. No restarts. Just config.
 
 ## Technical Highlights
 
-- **No deprecated Paper/Bukkit API used** — fully forward-compatible with Paper 1.21+.
+- **No deprecated Paper/Bukkit API** — fully forward-compatible with Paper 1.21+.
 - **Adventure API** for all text, titles, and action bars.
 - **Registry-based enchantment resolution** — no static `Enchantment.*` fields.
-- **PDC (Persistent Data Container)** for kill counts and ability state — data survives server restarts and item
-  transfers.
-- **`Firework#detonate()`** for instant fireworks with zero entity damage.
+- **PDC (Persistent Data Container)** — kill counts and ability state survive server restarts and item transfers.
+- **`Firework#detonate()`** — instant fireworks with zero entity damage, backed by a UUID deny-list to cancel the damage
+  event.
+- **`PrepareItemCraftEvent`** — vault weapons are blocked as ingredients before the result slot is ever shown.
+- **`HitListener`** — separate listener for hit-based abilities (`POISON_BLADE`) keeps kill and hit logic cleanly
+  separated.

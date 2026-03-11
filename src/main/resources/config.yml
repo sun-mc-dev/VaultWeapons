@@ -1,9 +1,14 @@
 # ==============================
 #   VaultWeapons Configuration
 # ==============================
-# To add a new weapon, copy an existing block and change the key.
-# Supported ability types: CROSSBOW_RELOAD, SWORD_SHARPNESS, NONE
-# Recipe type: SHAPED (only SHAPED is currently supported)
+# Ability types:
+#   CROSSBOW_RELOAD  — kills reduce crossbow reload time
+#   SWORD_SHARPNESS  — kills increase Sharpness by 1
+#   LIFESTEAL        — kills heal the player (heal_amount: half-hearts × 2, e.g. 4.0 = 2 hearts)
+#   SPEED_BOOST      — kills grant Speed effect (duration_ticks, amplifier: 1=SpeedI, 2=SpeedII)
+#   LIGHTNING_STRIKE — kills strike visual lightning at the victim (no damage, no fire)
+#   POISON_BLADE     — hits apply Poison to victim (duration_ticks, amplifier: 0=PoisonI)
+#   NONE             — no ability
 
 weapons:
 
@@ -59,3 +64,104 @@ weapons:
       ingredients:
         D: DIAMOND
         B: BLAZE_ROD
+
+  soul_blade:
+    type: GOLDEN_SWORD
+    name: "&d&lSoul Blade"
+    lore:
+      - "&7Drains the life of those it slays."
+      - " "
+      - "&ePassive: &fKills restore &c2 hearts&f."
+    custom_model_data: 1003
+    enchantments:
+      sharpness: 3
+      unbreaking: 2
+    ability:
+      type: LIFESTEAL
+      heal_amount: 4.0    # 4.0 half-hearts = 2 full hearts
+    recipe:
+      type: SHAPED
+      shape:
+        - " G "
+        - "GNG"
+        - " G "
+      ingredients:
+        G: GOLD_INGOT
+        N: NETHER_STAR
+
+  phantom_blade:
+    type: NETHERITE_SWORD
+    name: "&e&lPhantom Blade"
+    lore:
+      - "&7Move like a ghost after every kill."
+      - " "
+      - "&ePassive: &fKills grant &eSpeed II &ffor 5 seconds."
+    custom_model_data: 1004
+    enchantments:
+      sharpness: 4
+      unbreaking: 3
+    ability:
+      type: SPEED_BOOST
+      duration_ticks: 100   # 5 seconds
+      amplifier: 2          # 2 = Speed II (1 = Speed I)
+    recipe:
+      type: SHAPED
+      shape:
+        - " F "
+        - "FNF"
+        - " S "
+      ingredients:
+        F: FEATHER
+        N: NETHERITE_INGOT
+        S: STICK
+
+  storm_sword:
+    type: IRON_SWORD
+    name: "&e&lStorm Sword"
+    lore:
+      - "&7The sky answers every kill."
+      - " "
+      - "&ePassive: &fKills summon lightning at the victim."
+      - "&8Visual only — no fire, no damage."
+    custom_model_data: 1005
+    enchantments:
+      sharpness: 2
+      unbreaking: 2
+    ability:
+      type: LIGHTNING_STRIKE
+    recipe:
+      type: SHAPED
+      shape:
+        - " L "
+        - " I "
+        - " S "
+      ingredients:
+        L: LIGHTNING_ROD
+        I: IRON_SWORD
+        S: STICK
+
+  venom_dagger:
+    type: STONE_SWORD
+    name: "&2&lVenom Dagger"
+    lore:
+      - "&7Every scratch festers."
+      - " "
+      - "&ePassive: &fHits apply &2Poison I &ffor 5 seconds."
+    custom_model_data: 1006
+    enchantments:
+      sharpness: 1
+      unbreaking: 1
+    ability:
+      type: POISON_BLADE
+      duration_ticks: 100   # 5 seconds
+      amplifier: 0          # 0 = Poison I
+    recipe:
+      type: SHAPED
+      shape:
+        - " S "
+        - " P "
+        - " T "
+      ingredients:
+        S: SPIDER_EYE
+        P: POISONOUS_POTATO
+        T: STICK

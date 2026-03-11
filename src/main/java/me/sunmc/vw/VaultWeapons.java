@@ -4,6 +4,7 @@ import me.sunmc.vw.command.VWCommand;
 import me.sunmc.vw.config.WeaponConfigLoader;
 import me.sunmc.vw.listener.CraftListener;
 import me.sunmc.vw.listener.GUIListener;
+import me.sunmc.vw.listener.HitListener;
 import me.sunmc.vw.listener.KillListener;
 import me.sunmc.vw.manager.RecipeManager;
 import me.sunmc.vw.manager.WeaponManager;
@@ -49,6 +50,7 @@ public final class VaultWeapons extends JavaPlugin {
         var pm = getServer().getPluginManager();
         pm.registerEvents(new CraftListener(this, weaponManager), this);
         pm.registerEvents(new KillListener(this, weaponManager), this);
+        pm.registerEvents(new HitListener(this, weaponManager), this);
         pm.registerEvents(new GUIListener(weaponManager), this);
 
         var vwCmd = getCommand("vaultweapons");
@@ -85,5 +87,4 @@ public final class VaultWeapons extends JavaPlugin {
     public WeaponConfigLoader getConfigLoader() {
         return configLoader;
     }
-
 }

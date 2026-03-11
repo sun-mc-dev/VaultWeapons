@@ -21,7 +21,6 @@ public final class WeaponDefinition {
             Map<String, Integer> enchantments,
             AbilityType abilityType, Map<String, Object> abilityConfig,
             WeaponRecipe recipe) {
-
         this.id = id;
         this.materialType = materialType;
         this.displayName = displayName;
@@ -66,11 +65,20 @@ public final class WeaponDefinition {
     }
 
     /**
-     * Safely read an int from the ability-config map (handles Integer / Double from YAML).
+     * Safely reads an int from the ability-config map (handles Integer / Double from YAML).
      */
     public int abilityInt(String key, int def) {
         Object v = abilityConfig.get(key);
         if (v instanceof Number n) return n.intValue();
+        return def;
+    }
+
+    /**
+     * Safely reads a double from the ability-config map (handles Integer / Double from YAML).
+     */
+    public double abilityDouble(String key, double def) {
+        Object v = abilityConfig.get(key);
+        if (v instanceof Number n) return n.doubleValue();
         return def;
     }
 }

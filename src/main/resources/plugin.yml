@@ -1,6 +1,6 @@
 name: VaultWeapons
 version: '${project.version}'
-main: me.sunmc.vw.VaultWeaponsPlugin
+main: me.sunmc.vw.VaultWeapons
 api-version: '1.21'
 author: SunMC
 

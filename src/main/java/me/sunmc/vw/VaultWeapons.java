@@ -7,6 +7,8 @@ import me.sunmc.vw.listener.GUIListener;
 import me.sunmc.vw.listener.KillListener;
 import me.sunmc.vw.manager.RecipeManager;
 import me.sunmc.vw.manager.WeaponManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.concurrent.CompletableFuture;
@@ -56,13 +58,13 @@ public final class VaultWeapons extends JavaPlugin {
             vwCmd.setTabCompleter(cmd);
         }
 
-        getLogger().info("VaultWeapons enabled — "
-                + configLoader.getWeapons().size() + " weapon(s) loaded.");
+        getComponentLogger().info(Component.text("VaultWeapons enabled — "
+                + configLoader.getWeapons().size() + " weapon(s) loaded.", NamedTextColor.GREEN));
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("VaultWeapons disabled.");
+        getComponentLogger().info(Component.text("VaultWeapons disabled.", NamedTextColor.RED));
     }
 
     public void reloadPlugin() {

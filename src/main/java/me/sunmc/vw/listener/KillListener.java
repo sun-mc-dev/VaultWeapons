@@ -31,6 +31,8 @@ public final class KillListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(@NotNull EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
 
@@ -50,7 +52,8 @@ public final class KillListener implements Listener {
         }
     }
 
-    private void applyCrossbowReload(@NotNull Player player, ItemStack weapon, @NotNull WeaponDefinition def) {
+    private void applyCrossbowReload(@NotNull Player player, ItemStack weapon,
+                                     @NotNull WeaponDefinition def) {
         int base = def.abilityInt("base_reload_ticks", 25);
         int reduction = def.abilityInt("reduction_per_kill", 2);
         int minTicks = def.abilityInt("min_reload_ticks", 1);
@@ -77,9 +80,8 @@ public final class KillListener implements Listener {
         if (held.getType() != Material.CROSSBOW) return;
 
         if (!(held.getItemMeta() instanceof CrossbowMeta meta)) return;
-        if (meta.hasChargedProjectiles()) return; // already loaded
+        if (meta.hasChargedProjectiles()) return;
 
-        // Respect Infinity: load a phantom arrow that doesn't consume from inventory
         meta.setChargedProjectiles(List.of(new ItemStack(Material.ARROW)));
         held.setItemMeta(meta);
         player.getInventory().setItemInMainHand(held);
@@ -88,7 +90,8 @@ public final class KillListener implements Listener {
         player.playSound(player.getLocation(), Sound.ITEM_CROSSBOW_LOADING_END, 1.0f, 1.2f);
     }
 
-    private void applySwordSharpness(Player player, ItemStack weapon, @NotNull WeaponDefinition def) {
+    private void applySwordSharpness(Player player, ItemStack weapon,
+                                     @NotNull WeaponDefinition def) {
         int maxSharp = def.abilityInt("max_sharpness", 10);
         int current = weaponManager.getSharpnessLevel(weapon);
 

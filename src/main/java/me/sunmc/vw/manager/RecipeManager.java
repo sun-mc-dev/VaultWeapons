@@ -63,6 +63,8 @@ public final class RecipeManager {
 
         NamespacedKey key = new NamespacedKey(plugin, def.getId());
 
+        Bukkit.removeRecipe(key);
+
         if ("SHAPED".equalsIgnoreCase(recipe.type())) {
             List<String> shape = recipe.shape();
             if (shape.isEmpty()) return;
@@ -83,9 +85,14 @@ public final class RecipeManager {
                 }
             }
 
-            Bukkit.addRecipe(shaped);
-            registered.add(key);
-            plugin.getLogger().info("Registered recipe for: " + def.getId());
+            boolean added = Bukkit.addRecipe(shaped);
+            if (added) {
+                registered.add(key);
+                plugin.getLogger().info("Registered recipe for: " + def.getId());
+            } else {
+                plugin.getLogger().warning("Failed to register recipe for: " + def.getId()
+                        + " (addRecipe returned false)");
+            }
         } else {
             plugin.getLogger().warning(
                     "Unsupported recipe type '" + recipe.type() + "' for: " + def.getId());

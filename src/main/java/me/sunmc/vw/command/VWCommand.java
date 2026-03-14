@@ -3,6 +3,7 @@ package me.sunmc.vw.command;
 import me.sunmc.vw.VaultWeapons;
 import me.sunmc.vw.config.WeaponConfigLoader;
 import me.sunmc.vw.gui.RecipeGUI;
+import me.sunmc.vw.manager.CraftTracker;
 import me.sunmc.vw.manager.WeaponManager;
 import me.sunmc.vw.model.WeaponDefinition;
 import me.sunmc.vw.util.TextUtil;
@@ -15,28 +16,31 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public final class VWCommand implements TabExecutor {
 
     private final VaultWeapons plugin;
     private final WeaponManager weaponManager;
     private final WeaponConfigLoader configLoader;
+    private final CraftTracker craftTracker;
 
     public VWCommand(VaultWeapons plugin, WeaponManager weaponManager,
-                     WeaponConfigLoader configLoader) {
+                     WeaponConfigLoader configLoader, CraftTracker craftTracker) {
         this.plugin = plugin;
         this.weaponManager = weaponManager;
         this.configLoader = configLoader;
+        this.craftTracker = craftTracker;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, String @NotNull [] args) {
-
         if (args.length == 0) {
             sendHelp(sender);
             return true;
@@ -46,6 +50,7 @@ public final class VWCommand implements TabExecutor {
             case "recipe" -> cmdRecipe(sender, args);
             case "give" -> cmdGive(sender, args);
             case "reload" -> cmdReload(sender);
+            case "weapon" -> cmdWeapon(sender, args);
             default -> sendHelp(sender);
         }
         return true;
@@ -130,6 +135,67 @@ public final class VWCommand implements TabExecutor {
         plugin.reloadPlugin();
     }
 
+    private void cmdWeapon(@NotNull CommandSender sender, String[] args) {
+        if (!sender.hasPermission("vaultweapons.admin")) {
+            sender.sendMessage(Component.text("No permission.", NamedTextColor.RED));
+            return;
+        }
+
+        if (args.length < 2 || !"reset".equalsIgnoreCase(args[1])) {
+            sender.sendMessage(Component.text(
+                    "Usage: /vw weapon reset [all|<weapon_id>]", NamedTextColor.RED));
+            return;
+        }
+
+        boolean resetAll = args.length < 3 || "all".equalsIgnoreCase(args[2]);
+
+        if (resetAll) {
+            craftTracker.resetAll();
+            int removed = removeItemsFromInventories(null);
+            sender.sendMessage(Component.text(
+                    "✔ All weapon craft records reset. Removed "
+                            + removed + " item(s) from online players' inventories.",
+                    NamedTextColor.GREEN));
+        } else {
+            String weaponId = args[2];
+            if (configLoader.getWeapon(weaponId) == null) {
+                sender.sendMessage(Component.text("Unknown weapon: " + weaponId, NamedTextColor.RED));
+                return;
+            }
+            craftTracker.resetWeapon(weaponId);
+            int removed = removeItemsFromInventories(weaponId);
+            sender.sendMessage(Component.text(
+                    "✔ Craft records for '" + weaponId + "' reset. Removed "
+                            + removed + " item(s) from online players' inventories.",
+                    NamedTextColor.GREEN));
+        }
+    }
+
+    /**
+     * Removes vault weapon items from every online player's full inventory
+     * (main, hotbar, armour, offhand — all 41 slots).
+     *
+     * @param weaponId weapon to remove, or {@code null} to remove ALL vault weapons
+     * @return total number of item-stacks removed
+     */
+    private int removeItemsFromInventories(@Nullable String weaponId) {
+        int count = 0;
+        for (Player p : plugin.getServer().getOnlinePlayers()) {
+            var inv = p.getInventory();
+            for (int i = 0; i < inv.getSize(); i++) {
+                ItemStack item = inv.getItem(i);
+                if (item == null) continue;
+                Optional<String> id = weaponManager.getWeaponId(item);
+                if (id.isEmpty()) continue;
+                if (weaponId == null || weaponId.equals(id.get())) {
+                    inv.setItem(i, null);
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
     private void sendHelp(@NotNull CommandSender sender) {
         sender.sendMessage(Component.text("── VaultWeapons Help ───────────────", NamedTextColor.GOLD));
         sender.sendMessage(Component.text("/vw list", NamedTextColor.AQUA)
@@ -138,6 +204,8 @@ public final class VWCommand implements TabExecutor {
                 .append(Component.text(" — View crafting recipe", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/vw give <player> <id>", NamedTextColor.AQUA)
                 .append(Component.text(" — Give a weapon [admin]", NamedTextColor.GRAY)));
+        sender.sendMessage(Component.text("/vw weapon reset [all|<id>]", NamedTextColor.AQUA)
+                .append(Component.text(" — Reset craft records + remove items [admin]", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/vw reload", NamedTextColor.AQUA)
                 .append(Component.text(" — Reload config [admin]", NamedTextColor.GRAY)));
     }
@@ -146,14 +214,26 @@ public final class VWCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                       @NotNull String label, String @NotNull [] args) {
         if (args.length == 1)
-            return filter(List.of("list", "recipe", "give", "reload"), args[0]);
+            return filter(List.of("list", "recipe", "give", "reload", "weapon"), args[0]);
+
         if (args.length == 2)
             return switch (args[0].toLowerCase()) {
                 case "recipe", "give" -> filter(new ArrayList<>(configLoader.getWeapons().keySet()), args[1]);
+                case "weapon" -> filter(List.of("reset"), args[1]);
                 default -> Collections.emptyList();
             };
-        if (args.length == 3 && "give".equalsIgnoreCase(args[0]))
-            return filter(new ArrayList<>(configLoader.getWeapons().keySet()), args[2]);
+
+        if (args.length == 3)
+            return switch (args[0].toLowerCase()) {
+                case "give" -> filter(new ArrayList<>(configLoader.getWeapons().keySet()), args[2]);
+                case "weapon" -> {
+                    List<String> opts = new ArrayList<>(configLoader.getWeapons().keySet());
+                    opts.add("all");
+                    yield filter(opts, args[2]);
+                }
+                default -> Collections.emptyList();
+            };
+
         return Collections.emptyList();
     }
 
